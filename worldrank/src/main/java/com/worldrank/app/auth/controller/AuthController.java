@@ -42,26 +42,18 @@ public class AuthController {
     }
 
 
-  @PostMapping("/login")
+ @PostMapping("/login")
 public LoginResponse login(@RequestBody LoginRequest request) {
-   System.out.println("AuthController: Login attempt for " + request.email());
 
-   try {
-       Authentication authentication = authenticationManager.authenticate(
-           new UsernamePasswordAuthenticationToken(
-               request.email(),
-               request.password()
-           )
-       );
+    Authentication authentication = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            request.email(),
+            request.password()
+        )
+    );
 
-       String token = jwtProvider.generateToken(authentication.getName());
-       System.out.println("AuthController: Login successful, token generated");
-
-       return new LoginResponse(token);
-   } catch (Exception e) {
-       System.out.println("AuthController: Login failed: " + e.getMessage());
-       throw e;
-   }
+    String token = jwtProvider.generateToken(authentication.getName());
+    return new LoginResponse(token);
 }
 
 }
