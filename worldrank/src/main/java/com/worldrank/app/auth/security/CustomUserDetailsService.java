@@ -11,6 +11,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private UserRepository userRepository;
 
+     public CustomUserDetailsService(UserRepository userRepository) {
+        System.out.println("CustomUserDetailsService inicializado");
+        this.userRepository = userRepository;
+    }
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         var user = userRepository.findByEmail(email)
