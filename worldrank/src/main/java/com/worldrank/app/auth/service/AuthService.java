@@ -17,6 +17,12 @@ public class AuthService {
     private ProfileRepository profileRepository;
     private PasswordEncoder passwordEncoder;
 
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
     @Transactional
     public void register(String email, String username, String password, String country) {
         User user = new User(
