@@ -1,24 +1,29 @@
 package com.worldrank.app.user.controller;
 
-import com.worldrank.app.user.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 
+import java.util.UUID;
 import java.util.logging.Logger;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.worldrank.app.user.service.ProfileService;
 
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
-    private ProfileRepository profileRepository;
     private Logger logger = Logger.getLogger(UserController.class.getName());
+    private final ProfileService profileService;
 
-    @GetMapping("/me")
-    public Object me(@AuthenticationPrincipal Object principal) {
+    @GetMapping("/me/{userId}")
+    public ResponseEntity<?> me(@PathVariable UUID userId) {
         logger.info("ingresando a me ::: ");
-        return profileRepository.findAll(); // simplificado MVP
+        return new ResponseEntity<>(
+            profileService.getMyProfile(userId),
+            org.springframework.http.HttpStatus.OK
+            );
     }
 }

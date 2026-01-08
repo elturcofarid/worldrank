@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.UUID;
 
+import com.worldrank.app.ranking.domain.Rank;
+
 @Entity
 @Table(name = "perfil")
 @Getter @Setter
@@ -29,4 +31,11 @@ public class Profile {
 
     @Column(name = "puntaje_total")
     private Integer score;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_rango")
+    private Rank rango;
+
+    @Column(name = "foto_perfil")
+    private String fotoUrl;
 }
