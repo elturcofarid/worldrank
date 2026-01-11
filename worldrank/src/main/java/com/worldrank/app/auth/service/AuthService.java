@@ -13,15 +13,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private UserRepository userRepository;
-    private ProfileRepository profileRepository;
-    private PasswordEncoder passwordEncoder;
-
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final UserRepository userRepository;
+    private final ProfileRepository profileRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void register(String email, String username, String password, String country) {
@@ -38,10 +32,8 @@ public class AuthService {
                 UUID.randomUUID(),
                 user,
                 null,
-                0
+                1
         );
         profileRepository.save(profile);
-        
     }
-        
 }
