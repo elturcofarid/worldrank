@@ -12,7 +12,7 @@ import com.worldrank.app.score.repository.VisitaRepository;
 @Service
 public class VisitaService {
 
-    private final VisitaRepository visitaRepository;
+    private VisitaRepository visitaRepository;
 
     public VisitaService(VisitaRepository visitaRepository) {
         this.visitaRepository = visitaRepository;
@@ -28,6 +28,7 @@ public class VisitaService {
         }
 
         Visita visita = new Visita();
+        visita.setId(UUID.randomUUID());
         visita.setIdUsuario(idUsuario);
         visita.setLugar(lugar);
         visita.setPuntajeOtorgado(lugar.getPuntajeBase());

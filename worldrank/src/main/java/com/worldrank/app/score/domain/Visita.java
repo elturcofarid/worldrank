@@ -33,5 +33,19 @@ public class Visita {
     @Column(name = "puntaje_otorgado", nullable = false)
     private int puntajeOtorgado;
 
-    // getters y setters
+    public void setIdUsuario(UUID idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public void setLugar(Lugar lugar) {
+        this.lugar = lugar;
+    }
+
+    public void setPuntajeOtorgado(int puntajeOtorgado) {
+        this.puntajeOtorgado = puntajeOtorgado;
+    }
+
+    public Lugar getLugar() {
+        return lugar;
+    }
 }

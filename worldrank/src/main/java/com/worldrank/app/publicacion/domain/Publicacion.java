@@ -36,5 +36,31 @@ public class Publicacion {
     @Column(columnDefinition = "geography(Point,4326)")
     private Point gps;
 
-    // getters y setters
+    public UUID getId() {
+        return id;
+    }
+
+    public void setIdUsuario(UUID idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public void setLugar(Lugar lugar) {
+        this.lugar = lugar;
+    }
+
+    public void setUrlImagen(String urlImagen) {
+        this.urlImagen = urlImagen;
+    }
+
+    public void setGps(Point gps) {
+        this.gps = gps;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public OffsetDateTime getFechaPublicacion() {
+        return fechaPublicacion;
+    }
 }

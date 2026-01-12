@@ -38,4 +38,20 @@ public class Profile {
 
     @Column(name = "foto_perfil")
     private String fotoUrl;
+
+    public Integer getScore() {
+        return score;
+    }
+
+    public Rank getRango() {
+        return rango;
+    }
+
+    public String getBiografia() {
+        return biografia;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
 }

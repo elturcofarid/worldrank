@@ -15,4 +15,10 @@ public class LocalStorageService implements StorageService {
         // Simulación
         return "https://cdn.worldrank.com/" + UUID.randomUUID() + ".jpg";
     }
+
+    @Override
+    public String subirImagen(byte[] bytes) {
+        // Simulación
+        return "https://cdn.worldrank.com/" + UUID.randomUUID() + ".jpg";
+    }
 }

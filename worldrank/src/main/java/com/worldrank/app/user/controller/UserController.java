@@ -12,11 +12,14 @@ import com.worldrank.app.user.service.ProfileService;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@RequiredArgsConstructor
 public class UserController {
 
     private Logger logger = Logger.getLogger(UserController.class.getName());
-    private final ProfileService profileService;
+    private ProfileService profileService;
+
+    public UserController(ProfileService profileService) {
+        this.profileService = profileService;
+    }
 
     @GetMapping("/me/{userId}")
     public ResponseEntity<?> me(@PathVariable UUID userId) {

@@ -10,12 +10,17 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final ProfileRepository profileRepository;
-    private final PasswordEncoder passwordEncoder;
+    private UserRepository userRepository;
+    private ProfileRepository profileRepository;
+    private PasswordEncoder passwordEncoder;
+
+    public AuthService(UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Transactional
     public void register(String email, String username, String password, String country) {

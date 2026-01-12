@@ -15,11 +15,15 @@ import com.worldrank.app.user.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class ProfileService {
 
-    private final ProfileRepository profileRepository;
-    private final VisitaRepository visitRepository;
+    private ProfileRepository profileRepository;
+    private VisitaRepository visitRepository;
+
+    public ProfileService(ProfileRepository profileRepository, VisitaRepository visitRepository) {
+        this.profileRepository = profileRepository;
+        this.visitRepository = visitRepository;
+    }
 
     @Transactional(readOnly = true)
     public UserProfileResponse getMyProfile(UUID userId) {

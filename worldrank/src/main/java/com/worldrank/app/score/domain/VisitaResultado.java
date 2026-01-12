@@ -1,11 +1,18 @@
 package com.worldrank.app.score.domain;
 
-@lombok.Data
 public class VisitaResultado {
-    public VisitaResultado(int i, boolean b) {
-        //TODO Auto-generated constructor stub
+    public VisitaResultado(int puntaje, boolean lugarNuevo) {
+        this.puntaje = puntaje;
+        this.lugarNuevo = lugarNuevo;
     }
     private int puntaje;
     private boolean lugarNuevo;
 
+    public int getPuntaje() {
+        return puntaje;
+    }
+
+    public boolean isLugarNuevo() {
+        return lugarNuevo;
+    }
 }

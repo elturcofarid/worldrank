@@ -2,13 +2,26 @@ package com.worldrank.app.publicacion.controller;
 
 import java.util.UUID;
 
-@lombok.Data
-public class CrearPublicacionRequest {
+public record CrearPublicacionRequest(
+    UUID idLugar,
+    String descripcion,
+    double longitud,
+    double latitud,
+    String imagenBase64
+) {
+    public UUID getIdLugar() {
+        return idLugar;
+    }
 
-    private UUID idLugar;
-    private String descripcion;
-    private Double latitud;
-    private Double longitud;
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-    // getters y setters
+    public double getLongitud() {
+        return longitud;
+    }
+
+    public double getLatitud() {
+        return latitud;
+    }
 }

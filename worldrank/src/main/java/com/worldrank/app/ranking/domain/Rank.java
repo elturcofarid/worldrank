@@ -26,4 +26,7 @@ public class Rank {
     @Column(name = "puntaje_max", nullable = false)
     private Integer puntajeMax;
 
+    public String getNombre() {
+        return nombre;
+    }
 }
