@@ -14,7 +14,6 @@ import jakarta.persistence.Table;
 public class Lugar {
 
     @Id
-    @GeneratedValue
     @Column(name = "id_lugar")
     private UUID id;
 
@@ -40,5 +39,25 @@ public class Lugar {
 
     public int getPuntajeBase() {
         return puntajeBase;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setTipoLugar(String tipoLugar) {
+        this.tipoLugar = tipoLugar;
+    }
+
+    public void setPuntajeBase(int puntajeBase) {
+        this.puntajeBase = puntajeBase;
+    }
+
+    public void setGeom(Point geom) {
+        this.geom = geom;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 }

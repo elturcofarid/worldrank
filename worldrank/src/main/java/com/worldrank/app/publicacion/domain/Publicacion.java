@@ -13,7 +13,6 @@ import com.worldrank.app.lugar.domain.Lugar;
 public class Publicacion {
 
     @Id
-    @GeneratedValue
     @Column(name = "id_publicacion")
     private UUID id;
 
@@ -21,7 +20,7 @@ public class Publicacion {
     private UUID idUsuario;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_lugar", nullable = false)
+    @JoinColumn(name = "id_lugar")
     private Lugar lugar;
 
     @Column

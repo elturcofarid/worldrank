@@ -101,6 +101,13 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- Metadata Extractor for EXIF GPS -->
+    <dependency>
+      <groupId>com.drewnoakes</groupId>
+      <artifactId>metadata-extractor</artifactId>
+      <version>2.18.0</version>
+    </dependency>
  </dependencies>
 
 	<build>

@@ -16,7 +16,6 @@ import com.worldrank.app.lugar.domain.Lugar;
 public class Visita {
 
     @Id
-    @GeneratedValue
     @Column(name = "id_visita")
     private UUID id;
 

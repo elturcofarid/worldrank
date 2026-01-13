@@ -3,6 +3,7 @@ package com.worldrank.app.publicacion.service;
 import com.worldrank.app.lugar.domain.Lugar;
 import com.worldrank.app.lugar.service.LugarService;
 import com.worldrank.app.lugar.service.StorageService;
+import com.worldrank.app.geocoding.GeocodingService;
 import com.worldrank.app.publicacion.controller.CrearPublicacionRequest;
 import com.worldrank.app.publicacion.controller.PublicacionResponse;
 import org.locationtech.jts.geom.Point;
@@ -26,18 +27,24 @@ public class PublicacionService {
     private LugarService lugarService;
     private VisitaService visitaService;
     private StorageService storageService;
+    private ImageMetadataService imageMetadataService;
+    private GeocodingService geocodingService;
     private GeometryFactory geometryFactory;
 
     public PublicacionService(
             PublicacionRepository publicacionRepository,
             LugarService lugarService,
             VisitaService visitaService,
-            StorageService storageService) {
+            StorageService storageService,
+            ImageMetadataService imageMetadataService,
+            GeocodingService geocodingService) {
 
         this.publicacionRepository = publicacionRepository;
         this.lugarService = lugarService;
         this.visitaService = visitaService;
         this.storageService = storageService;
+        this.imageMetadataService = imageMetadataService;
+        this.geocodingService = geocodingService;
         this.geometryFactory = new GeometryFactory();
     }
 
@@ -57,22 +64,54 @@ public class PublicacionService {
             }
             byte[] imagenBytes = Base64.getDecoder().decode(base64Data);
 
-            // 2️⃣ Subir imagen
+            // 2️⃣ Extraer coordenadas GPS de la imagen si no están proporcionadas
+            Double longitud = request.getLongitud();
+            Double latitud = request.getLatitud();
+            if (longitud == null || latitud == null) {
+                try {
+                    double[] gpsCoords = imageMetadataService.extractGpsCoordinates(imagenBytes);
+                    if (gpsCoords != null) {
+                        longitud = gpsCoords[0];
+                        latitud = gpsCoords[1];
+                        System.out.println("Coordenadas GPS extraídas de la imagen: " + longitud + ", " + latitud);
+                    } else {
+                        System.out.println("No se encontraron coordenadas GPS en la imagen");
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error extrayendo GPS de la imagen: " + e.getMessage());
+                }
+            }
+
+            // 3️⃣ Subir imagen
             String urlImagen = storageService.subirImagen(imagenBytes);
             System.out.println("Imagen subida: " + urlImagen);
 
-            // 2️⃣ Obtener lugar
-            Lugar lugar = lugarService.obtenerPorId(request.getIdLugar());
-            System.out.println("Lugar obtenido: " + lugar.getId());
+            // 4️⃣ Crear lugar usando geocoding
+            String nombreLugar = "Ubicación desconocida";
+            try {
+                var place = geocodingService.reverseGeocode(latitud, longitud);
+                if (place != null) {
+                    nombreLugar = place.name();
+                }
+            } catch (Exception e) {
+                System.out.println("Error en geocoding: " + e.getMessage());
+            }
+            Lugar lugar = lugarService.crearLugar(nombreLugar, "Fotografía", 10, longitud, latitud);
+            System.out.println("Lugar creado: " + lugar.getId());
 
-            // 3️⃣ Crear punto GPS (lng, lat)
+            // 5️⃣ Crear punto GPS (lng, lat)
             Point gps = geometryFactory.createPoint(
-                    new Coordinate(request.getLongitud(), request.getLatitud())
+                    new Coordinate(longitud.doubleValue(), latitud.doubleValue())
             );
             gps.setSRID(4326);
             System.out.println("GPS creado: " + gps);
 
-            // 4️⃣ Crear publicación
+            // 6️⃣ Puntaje
+            VisitaResultado resultado =
+                    visitaService.registrarVisita(idUsuario, lugar);
+            System.out.println("Visita registrada, puntaje: " + resultado.getPuntaje());
+
+            // 7️⃣ Crear publicación
             Publicacion publicacion = new Publicacion();
             publicacion.setId(UUID.randomUUID());
             publicacion.setIdUsuario(idUsuario);
@@ -83,11 +122,6 @@ public class PublicacionService {
 
             publicacionRepository.save(publicacion);
             System.out.println("Publicacion guardada: " + publicacion.getId());
-
-            // 5️⃣ Puntaje
-            VisitaResultado resultado =
-                    visitaService.registrarVisita(idUsuario, lugar);
-            System.out.println("Visita registrada, puntaje: " + resultado.getPuntaje());
 
             return new PublicacionResponse(
                     publicacion.getId(),

@@ -27,15 +27,21 @@ public class VisitaService {
             return new VisitaResultado(0, false);
         }
 
-        Visita visita = new Visita();
-        visita.setId(UUID.randomUUID());
-        visita.setIdUsuario(idUsuario);
-        visita.setLugar(lugar);
-        visita.setPuntajeOtorgado(lugar.getPuntajeBase());
+        try {
+            Visita visita = new Visita();
+            visita.setId(UUID.randomUUID());
+            visita.setIdUsuario(idUsuario);
+            visita.setLugar(lugar);
+            visita.setPuntajeOtorgado(lugar.getPuntajeBase());
 
-        visitaRepository.save(visita);
+            visitaRepository.save(visita);
 
-        return new VisitaResultado(lugar.getPuntajeBase(), true);
+            return new VisitaResultado(lugar.getPuntajeBase(), true);
+        } catch (Exception e) {
+            // Si hay error (ej. trigger de BD), retornar sin puntaje
+            System.out.println("Error registrando visita: " + e.getMessage());
+            return new VisitaResultado(0, false);
+        }
     }
 }
 
