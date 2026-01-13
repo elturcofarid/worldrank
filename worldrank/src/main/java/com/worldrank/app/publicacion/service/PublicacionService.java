@@ -83,7 +83,7 @@ public class PublicacionService {
             }
 
             // 3️⃣ Subir imagen
-            String urlImagen = storageService.subirImagen(imagenBytes);
+            String urlImagen = storageService.subirImagen(imagenBytes, "publicaciones", idUsuario);
             System.out.println("Imagen subida: " + urlImagen);
 
             // 4️⃣ Crear lugar usando geocoding

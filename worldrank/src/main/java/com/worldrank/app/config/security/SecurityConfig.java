@@ -7,10 +7,21 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.web.SecurityFilterChain;
+
+import com.worldrank.app.auth.security.JwtProvider;
 
 @Configuration
 public class SecurityConfig {
+
+    private final JwtProvider jwtProvider;
+
+    public SecurityConfig(JwtProvider jwtProvider) {
+        this.jwtProvider = jwtProvider;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -18,10 +29,30 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.decoder(jwtDecoder()))
+            )
             .authorizeHttpRequests(auth -> auth
                 .anyRequest().permitAll()
             );
         return http.build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() {
+        return new JwtDecoder() {
+            @Override
+            public Jwt decode(String token) throws JwtException {
+                if (!jwtProvider.validate(token)) {
+                    throw new JwtException("Invalid JWT");
+                }
+                String subject = jwtProvider.getSubject(token);
+                return Jwt.withTokenValue(token)
+                    .header("alg", "HS256")
+                    .subject(subject)
+                    .build();
+            }
+        };
     }
 
     @Bean
