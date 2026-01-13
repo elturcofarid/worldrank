@@ -39,6 +39,10 @@ public class Publicacion {
         return id;
     }
 
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
     public void setIdUsuario(UUID idUsuario) {
         this.idUsuario = idUsuario;
     }

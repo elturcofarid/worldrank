@@ -22,13 +22,18 @@ public class PublicacionController {
     }
 
     @PostMapping
-    public ResponseEntity<PublicacionResponse> crear(
-            @RequestBody CrearPublicacionRequest request,
-            @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<PublicacionResponse> crear(@RequestBody CrearPublicacionRequest request, @AuthenticationPrincipal Jwt jwt) {
 
         logger.info("Received crear request: {}", request);
 
-        UUID idUsuario = UUID.fromString(jwt.getSubject());
+        UUID idUsuario;
+        if (jwt != null) {
+            String userId = jwt.getSubject();
+            idUsuario = UUID.fromString(userId);
+        } else {
+            // Use a default user for anonymous access
+            idUsuario = UUID.fromString("00000000-0000-0000-0000-000000000000");
+        }
 
         return ResponseEntity.ok(
                 publicacionService.crearPublicacion(idUsuario, request)

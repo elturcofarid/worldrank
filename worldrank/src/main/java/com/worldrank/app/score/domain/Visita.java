@@ -32,6 +32,10 @@ public class Visita {
     @Column(name = "puntaje_otorgado", nullable = false)
     private int puntajeOtorgado;
 
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
     public void setIdUsuario(UUID idUsuario) {
         this.idUsuario = idUsuario;
     }

@@ -29,6 +29,16 @@ public class JwtProvider {
                 .compact();
     }
 
+    public String generateToken(String userId, String profileId) {
+        return Jwts.builder()
+                .claim("user", userId)
+                .claim("profile", profileId)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public String getSubject(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -45,5 +55,9 @@ public class JwtProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public io.jsonwebtoken.Claims getClaims(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 }

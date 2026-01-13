@@ -15,11 +15,13 @@ public class AuthService {
     private UserRepository userRepository;
     private ProfileRepository profileRepository;
     private PasswordEncoder passwordEncoder;
+    private com.worldrank.app.auth.security.JwtProvider jwtProvider;
 
-    public AuthService(UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder, com.worldrank.app.auth.security.JwtProvider jwtProvider) {
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtProvider = jwtProvider;
     }
 
     @Transactional
@@ -40,5 +42,17 @@ public class AuthService {
                 1
         );
         profileRepository.save(profile);
+    }
+
+    public String login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+        Profile profile = profileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        // Generate JWT with user and profile data
+        return jwtProvider.generateToken(user.getId().toString(), profile.getId().toString());
     }
 }

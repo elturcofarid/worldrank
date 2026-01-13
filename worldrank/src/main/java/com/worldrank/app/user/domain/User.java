@@ -42,4 +42,8 @@ public class User {
         return password;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
 }

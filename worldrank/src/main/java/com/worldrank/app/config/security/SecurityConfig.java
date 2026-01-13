@@ -46,10 +46,14 @@ public class SecurityConfig {
                 if (!jwtProvider.validate(token)) {
                     throw new JwtException("Invalid JWT");
                 }
-                String subject = jwtProvider.getSubject(token);
+                // Parse claims to get user and profile
+                io.jsonwebtoken.Claims claims = jwtProvider.getClaims(token);
+                String userId = claims.get("user", String.class);
+                String profileId = claims.get("profile", String.class);
                 return Jwt.withTokenValue(token)
                     .header("alg", "HS256")
-                    .subject(subject)
+                    .subject(userId)  // Use user claim as subject
+                    .claim("profile", profileId)
                     .build();
             }
         };
@@ -58,10 +62,5 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
     }
 }

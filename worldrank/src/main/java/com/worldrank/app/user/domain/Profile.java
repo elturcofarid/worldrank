@@ -54,4 +54,8 @@ public class Profile {
     public String getFotoUrl() {
         return fotoUrl;
     }
+
+    public UUID getId() {
+        return id;
+    }
 }

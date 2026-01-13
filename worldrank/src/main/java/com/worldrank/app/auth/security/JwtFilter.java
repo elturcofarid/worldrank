@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Component
 public class JwtFilter extends GenericFilter {
 
     private final JwtProvider jwtProvider;
