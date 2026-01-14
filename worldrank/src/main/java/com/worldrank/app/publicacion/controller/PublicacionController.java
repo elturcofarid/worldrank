@@ -8,6 +8,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import com.worldrank.app.publicacion.service.PublicacionService;
+import com.worldrank.app.user.domain.Usuario;
+import com.worldrank.app.user.repository.UsuarioRepository;
 
 @RestController
 @RequestMapping("/api/publicaciones")
@@ -16,9 +18,11 @@ public class PublicacionController {
     private static final Logger logger = LoggerFactory.getLogger(PublicacionController.class);
 
     private final PublicacionService publicacionService;
+    private final UsuarioRepository userRepository;
 
-    public PublicacionController(PublicacionService publicacionService) {
+    public PublicacionController(PublicacionService publicacionService, UsuarioRepository userRepository) {
         this.publicacionService = publicacionService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -35,8 +39,11 @@ public class PublicacionController {
             idUsuario = UUID.fromString("00000000-0000-0000-0000-000000000000");
         }
 
+        Usuario usuario = userRepository.findById(idUsuario)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado")); 
+
         return ResponseEntity.ok(
-                publicacionService.crearPublicacion(idUsuario, request)
+                publicacionService.crearPublicacion(usuario, request)
         );
     }
 }

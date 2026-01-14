@@ -12,12 +12,12 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
-    private UserRepository userRepository;
+    private UsuarioRepository userRepository;
     private ProfileRepository profileRepository;
     private PasswordEncoder passwordEncoder;
     private com.worldrank.app.auth.security.JwtProvider jwtProvider;
 
-    public AuthService(UserRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder, com.worldrank.app.auth.security.JwtProvider jwtProvider) {
+    public AuthService(UsuarioRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder, com.worldrank.app.auth.security.JwtProvider jwtProvider) {
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
         this.passwordEncoder = passwordEncoder;
@@ -26,7 +26,7 @@ public class AuthService {
 
     @Transactional
     public void register(String email, String username, String password, String country) {
-        User user = new User(
+        Usuario user = new Usuario(
                 UUID.randomUUID(),
                 email,
                 username,
@@ -45,7 +45,7 @@ public class AuthService {
     }
 
     public String login(String email, String password) {
-        User user = userRepository.findByEmail(email)
+        Usuario user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");

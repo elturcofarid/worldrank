@@ -1,4 +1,4 @@
-package com.worldrank.app.score.domain;
+package com.worldrank.app.visita.domain;
 
 public class VisitaResultado {
     public VisitaResultado(int puntaje, boolean lugarNuevo) {

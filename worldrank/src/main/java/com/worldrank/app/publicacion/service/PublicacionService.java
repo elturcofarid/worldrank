@@ -7,12 +7,15 @@ import com.worldrank.app.geocoding.GeocodingService;
 import com.worldrank.app.publicacion.controller.CrearPublicacionRequest;
 import com.worldrank.app.publicacion.controller.PublicacionResponse;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import com.worldrank.app.publicacion.domain.Publicacion;
 import com.worldrank.app.publicacion.repository.PublicacionRepository;
-import com.worldrank.app.score.domain.VisitaResultado;
-import com.worldrank.app.score.service.VisitaService;
+import com.worldrank.app.user.domain.Usuario;
+import com.worldrank.app.visita.domain.VisitaResultado;
+import com.worldrank.app.visita.service.VisitaService;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,14 +48,14 @@ public class PublicacionService {
         this.storageService = storageService;
         this.imageMetadataService = imageMetadataService;
         this.geocodingService = geocodingService;
-        this.geometryFactory = new GeometryFactory();
+        this.geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     }
 
     public PublicacionResponse crearPublicacion(
-            UUID idUsuario,
+            Usuario usuario,
             CrearPublicacionRequest request) {
         try {
-            System.out.println("Creando publicacion para usuario: " + idUsuario);
+            System.out.println("Creando publicacion para usuario: " + usuario);
 
             // 1️⃣ Decodificar imagen base64
             String base64Data = request.imagenBase64();
@@ -83,7 +86,7 @@ public class PublicacionService {
             }
 
             // 3️⃣ Subir imagen
-            String urlImagen = storageService.subirImagen(imagenBytes, "publicaciones", idUsuario);
+            String urlImagen = storageService.subirImagen(imagenBytes, "publicaciones", usuario.getId());
             System.out.println("Imagen subida: " + urlImagen);
 
             // 4️⃣ Crear lugar usando geocoding
@@ -96,25 +99,24 @@ public class PublicacionService {
             } catch (Exception e) {
                 System.out.println("Error en geocoding: " + e.getMessage());
             }
-            Lugar lugar = lugarService.crearLugar(nombreLugar, "Fotografía", 10, longitud, latitud);
-            System.out.println("Lugar creado: " + lugar.getId());
 
             // 5️⃣ Crear punto GPS (lng, lat)
             Point gps = geometryFactory.createPoint(
                     new Coordinate(longitud.doubleValue(), latitud.doubleValue())
             );
+
+            Lugar lugar = lugarService.obtenerLugarCercano(gps);
+            System.out.println("Lugar creado: " + lugar.getId());
+
             gps.setSRID(4326);
             System.out.println("GPS creado: " + gps);
 
-            // 6️⃣ Puntaje
-            VisitaResultado resultado =
-                    visitaService.registrarVisita(idUsuario, lugar);
-            System.out.println("Visita registrada, puntaje: " + resultado.getPuntaje());
+          
 
             // 7️⃣ Crear publicación
             Publicacion publicacion = new Publicacion();
             publicacion.setId(UUID.randomUUID());
-            publicacion.setIdUsuario(idUsuario);
+            publicacion.setIdUsuario(usuario.getId());
             publicacion.setLugar(lugar);
             publicacion.setDescripcion(request.getDescripcion());
             publicacion.setUrlImagen(urlImagen);
@@ -123,15 +125,22 @@ public class PublicacionService {
             publicacionRepository.save(publicacion);
             System.out.println("Publicacion guardada: " + publicacion.getId());
 
+
+              // 6️⃣ registra visita y obtiene Puntaje
+            int resultado =
+                    visitaService.registrarVisita(usuario, lugar);
+            System.out.println("Visita registrada, puntaje: " + resultado);
+
+
             return new PublicacionResponse(
                     publicacion.getId(),
-                    idUsuario,
+                    usuario.getId(),
                     lugar.getId(),
                     request.getDescripcion(),
                     urlImagen,
                     publicacion.getFechaPublicacion(),
-                    resultado.getPuntaje(),
-                    resultado.isLugarNuevo()
+                    resultado,
+                    false
             );
         } catch (Exception e) {
             System.err.println("Error creando publicacion: " + e.getMessage());

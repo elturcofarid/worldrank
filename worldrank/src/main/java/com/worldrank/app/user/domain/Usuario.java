@@ -8,9 +8,9 @@ import java.util.UUID;
 @Table(name = "usuario")
 @Getter @Setter
 @NoArgsConstructor
-public class User {
+public class Usuario {
 
-    public User(UUID id, String email, String username, String password, String country) {
+    public Usuario(UUID id, String email, String username, String password, String country) {
         this.id = id;
         this.email = email;
         this.username = username;

@@ -24,6 +24,8 @@ public class UserController {
     @GetMapping("/me/{userId}")
     public ResponseEntity<?> me(@PathVariable UUID userId) {
         logger.info("ingresando a me ::: ");
+
+        
         return new ResponseEntity<>(
             profileService.getMyProfile(userId),
             org.springframework.http.HttpStatus.OK
