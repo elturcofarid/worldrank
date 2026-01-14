@@ -12,7 +12,7 @@ import com.worldrank.app.ranking.domain.Rank;
 @NoArgsConstructor
 public class Profile {
 
-    public Profile(UUID id, User user, String biografia, Integer score) {
+    public Profile(UUID id, Usuario user, String biografia, Integer score) {
         this.id = id;
         this.user = user;
         this.biografia = biografia;
@@ -25,7 +25,7 @@ public class Profile {
 
     @OneToOne
     @JoinColumn(name = "id_usuario", nullable = false)
-    private User user;
+    private Usuario user;
 
     private String biografia;
 
@@ -38,4 +38,24 @@ public class Profile {
 
     @Column(name = "foto_perfil")
     private String fotoUrl;
+
+    public Integer getScore() {
+        return score;
+    }
+
+    public Rank getRango() {
+        return rango;
+    }
+
+    public String getBiografia() {
+        return biografia;
+    }
+
+    public String getFotoUrl() {
+        return fotoUrl;
+    }
+
+    public UUID getId() {
+        return id;
+    }
 }

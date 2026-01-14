@@ -10,16 +10,23 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final ProfileRepository profileRepository;
-    private final PasswordEncoder passwordEncoder;
+    private UsuarioRepository userRepository;
+    private ProfileRepository profileRepository;
+    private PasswordEncoder passwordEncoder;
+    private com.worldrank.app.auth.security.JwtProvider jwtProvider;
+
+    public AuthService(UsuarioRepository userRepository, ProfileRepository profileRepository, PasswordEncoder passwordEncoder, com.worldrank.app.auth.security.JwtProvider jwtProvider) {
+        this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtProvider = jwtProvider;
+    }
 
     @Transactional
     public void register(String email, String username, String password, String country) {
-        User user = new User(
+        Usuario user = new Usuario(
                 UUID.randomUUID(),
                 email,
                 username,
@@ -35,5 +42,17 @@ public class AuthService {
                 1
         );
         profileRepository.save(profile);
+    }
+
+    public String login(String email, String password) {
+        Usuario user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+        Profile profile = profileRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("Profile not found"));
+        // Generate JWT with user and profile data
+        return jwtProvider.generateToken(user.getId().toString(), profile.getId().toString());
     }
 }
