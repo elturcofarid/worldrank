@@ -20,6 +20,7 @@ import com.worldrank.app.user.domain.Usuario;
 public class Visita {
 
     @Id
+    @GeneratedValue
     @Column(name = "id_visita")
     private UUID id;
 
@@ -33,11 +34,11 @@ public class Visita {
     */
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "id_usuario", nullable = false)
     private Usuario usuario;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "lugar_id", nullable = false)
+    @JoinColumn(name = "id_lugar", nullable = false)
     private Lugar lugar;
 
     @Column(name = "fecha_visita")

@@ -2,6 +2,8 @@ package com.worldrank.app.auth.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +12,8 @@ import java.util.Date;
 
 @Component
 public class JwtProvider {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtProvider.class);
 
     private final Key key;
     private final long expiration;
@@ -39,6 +43,15 @@ public class JwtProvider {
                 .compact();
     }
 
+    public String generateNonExpiringToken(String userId, String profileId) {
+        return Jwts.builder()
+                .claim("user", userId)
+                .claim("profile", profileId)
+                .setIssuedAt(new Date())
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     public String getSubject(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -53,6 +66,7 @@ public class JwtProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
+            logger.warn("Invalid JWT token: {}", e.getMessage());
             return false;
         }
     }

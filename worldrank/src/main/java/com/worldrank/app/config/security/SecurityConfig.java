@@ -1,5 +1,7 @@
 package com.worldrank.app.config.security;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +18,8 @@ import com.worldrank.app.auth.security.JwtProvider;
 
 @Configuration
 public class SecurityConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final JwtProvider jwtProvider;
 
@@ -44,6 +48,7 @@ public class SecurityConfig {
             @Override
             public Jwt decode(String token) throws JwtException {
                 if (!jwtProvider.validate(token)) {
+                    logger.warn("JWT decoding failed: Invalid token");
                     throw new JwtException("Invalid JWT");
                 }
                 // Parse claims to get user and profile
