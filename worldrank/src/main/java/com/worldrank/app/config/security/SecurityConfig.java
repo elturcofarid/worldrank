@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,7 @@ import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.worldrank.app.auth.security.JwtProvider;
+import com.worldrank.app.user.domain.Usuario;
 
 @Configuration
 public class SecurityConfig {
@@ -53,7 +55,7 @@ public class SecurityConfig {
                 }
                 // Parse claims to get user and profile
                 io.jsonwebtoken.Claims claims = jwtProvider.getClaims(token);
-                String userId = claims.get("user", String.class);
+                String userId =  claims.get("id", String.class);
                 String profileId = claims.get("profile", String.class);
                 return Jwt.withTokenValue(token)
                     .header("alg", "HS256")

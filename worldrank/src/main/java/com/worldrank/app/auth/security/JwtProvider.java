@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.worldrank.app.user.domain.Usuario;
+
 import java.security.Key;
 import java.util.Date;
 
@@ -33,20 +35,26 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String generateToken(String userId, String profileId) {
+    public String generateToken(Usuario user, String profileId) {
         return Jwts.builder()
-                .claim("user", userId)
+                .claim("user", user)
                 .claim("profile", profileId)
+                .claim("id", user.getId().toString()) 
+                .claim("email", user.getEmail())
+                .claim("username", user.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String generateNonExpiringToken(String userId, String profileId) {
+    public String generateNonExpiringToken(Usuario user, String profileId) {
         return Jwts.builder()
-                .claim("user", userId)
+                .claim("user", user)
                 .claim("profile", profileId)
+                .claim("id", user.getId().toString()) 
+                .claim("email", user.getEmail())
+                .claim("username", user.getUsername())
                 .setIssuedAt(new Date())
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();

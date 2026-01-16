@@ -53,6 +53,6 @@ public class AuthService {
         Profile profile = profileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Profile not found"));
         // Generate JWT with user and profile data
-        return jwtProvider.generateToken(user.getId().toString(), profile.getId().toString());
+        return jwtProvider.generateToken(user, profile.getId().toString());
     }
 }
