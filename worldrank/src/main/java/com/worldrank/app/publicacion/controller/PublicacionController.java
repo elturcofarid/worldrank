@@ -3,10 +3,16 @@ package com.worldrank.app.publicacion.controller;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import com.worldrank.app.publicacion.dto.PublicacionListResponse;
 import com.worldrank.app.publicacion.service.PublicacionService;
 import com.worldrank.app.user.domain.Usuario;
 import com.worldrank.app.user.repository.UsuarioRepository;
@@ -25,6 +31,16 @@ public class PublicacionController {
         this.userRepository = userRepository;
     }
 
+    @GetMapping
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Page<PublicacionListResponse>> listar(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal Jwt jwt) {
+       // Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaPublicacion").descending());
+        return ResponseEntity.ok(publicacionService.obtenerPublicaciones(pageable));
+    }
+
     @PostMapping
     public ResponseEntity<PublicacionResponse> crear(@RequestBody CrearPublicacionRequest request, @AuthenticationPrincipal Jwt jwt) {
 
@@ -40,7 +56,7 @@ public class PublicacionController {
         }
 
         Usuario usuario = userRepository.findById(idUsuario)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado")); 
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return ResponseEntity.ok(
                 publicacionService.crearPublicacion(usuario, request)

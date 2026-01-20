@@ -6,16 +6,23 @@ import com.worldrank.app.lugar.service.StorageService;
 import com.worldrank.app.geocoding.GeocodingService;
 import com.worldrank.app.publicacion.controller.CrearPublicacionRequest;
 import com.worldrank.app.publicacion.controller.PublicacionResponse;
+import com.worldrank.app.publicacion.dto.PublicacionListResponse;
+import com.worldrank.app.publicacion.dto.UsuarioSummary;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import com.worldrank.app.publicacion.domain.Publicacion;
 import com.worldrank.app.publicacion.repository.PublicacionRepository;
+import com.worldrank.app.user.domain.Profile;
 import com.worldrank.app.user.domain.Usuario;
+import com.worldrank.app.user.repository.ProfileRepository;
+import com.worldrank.app.user.repository.UsuarioRepository;
 import com.worldrank.app.visita.domain.VisitaResultado;
 import com.worldrank.app.visita.service.VisitaService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +39,8 @@ public class PublicacionService {
     private StorageService storageService;
     private ImageMetadataService imageMetadataService;
     private GeocodingService geocodingService;
+    private ProfileRepository profileRepository;
+    private UsuarioRepository usuarioRepository;
     private GeometryFactory geometryFactory;
 
     public PublicacionService(
@@ -40,7 +49,9 @@ public class PublicacionService {
             VisitaService visitaService,
             StorageService storageService,
             ImageMetadataService imageMetadataService,
-            GeocodingService geocodingService) {
+            GeocodingService geocodingService,
+            ProfileRepository profileRepository,
+            UsuarioRepository usuarioRepository) {
 
         this.publicacionRepository = publicacionRepository;
         this.lugarService = lugarService;
@@ -48,6 +59,8 @@ public class PublicacionService {
         this.storageService = storageService;
         this.imageMetadataService = imageMetadataService;
         this.geocodingService = geocodingService;
+        this.profileRepository = profileRepository;
+        this.usuarioRepository = usuarioRepository;
         this.geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     }
 
@@ -147,5 +160,33 @@ public class PublicacionService {
             e.printStackTrace();
             throw e;
         }
+    }
+
+    public Page<PublicacionListResponse> obtenerPublicaciones(Pageable pageable) {
+        Page<Publicacion> publicaciones = publicacionRepository.findAll(pageable);
+        return publicaciones.map(publicacion -> {
+            Usuario usuario = usuarioRepository.findById(publicacion.getIdUsuario()).orElse(null);
+            if (usuario == null) return null;
+
+            Profile profile = profileRepository.findByUserId(usuario.getId()).orElse(null);
+            String nombre = profile != null ? usuario.getUsername() : usuario.getEmail();
+            String avatarUrl = profile != null ? profile.getFotoUrl() : null;
+
+            UsuarioSummary usuarioSummary = new UsuarioSummary(
+                usuario.getId(),
+                nombre,
+                avatarUrl
+            );
+
+            return new PublicacionListResponse(
+                publicacion.getId(),
+                publicacion.getDescripcion(),
+                publicacion.getUrlImagen(),
+                publicacion.getGps() != null ? publicacion.getGps().getX() : null,
+                publicacion.getGps() != null ? publicacion.getGps().getY() : null,
+                publicacion.getFechaPublicacion(),
+                usuarioSummary
+            );
+        });
     }
 }
