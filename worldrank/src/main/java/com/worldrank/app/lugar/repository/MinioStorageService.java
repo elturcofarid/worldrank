@@ -13,6 +13,7 @@ import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.SetBucketPolicyArgs;
 
 @Service
 public class MinioStorageService implements StorageService {
@@ -75,6 +76,24 @@ public class MinioStorageService implements StorageService {
             boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
             if (!found) {
                 minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+                // Set public read policy for images
+                String policy = """
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": {"AWS": "*"},
+                                "Action": ["s3:GetObject"],
+                                "Resource": ["arn:aws:s3:::%s/*"]
+                            }
+                        ]
+                    }
+                    """.formatted(bucket);
+                minioClient.setBucketPolicy(SetBucketPolicyArgs.builder()
+                    .bucket(bucket)
+                    .config(policy)
+                    .build());
             }
         } catch (Exception e) {
             throw new RuntimeException("Error checking/creating bucket", e);

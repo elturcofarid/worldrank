@@ -36,12 +36,16 @@ public class PublicacionController {
     public ResponseEntity<Page<PublicacionListResponse>> listar(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal Jwt jwt) {
+       logger.info("Listar publicaciones - page: {}, size: {}", page, size);
        // Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
         Pageable pageable = PageRequest.of(page, size, Sort.by("fechaPublicacion").descending());
-        return ResponseEntity.ok(publicacionService.obtenerPublicaciones(pageable));
+        Page<PublicacionListResponse> result = publicacionService.obtenerPublicaciones(pageable);
+        logger.info("Returning {} publications for page {}, total pages: {}, total elements: {}", result.getNumberOfElements(), page, result.getTotalPages(), result.getTotalElements());
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<PublicacionResponse> crear(@RequestBody CrearPublicacionRequest request, @AuthenticationPrincipal Jwt jwt) {
 
         logger.info("Received crear request: {}", request);

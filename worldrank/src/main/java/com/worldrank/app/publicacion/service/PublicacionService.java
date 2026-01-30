@@ -102,6 +102,7 @@ public class PublicacionService {
             String urlImagen = storageService.subirImagen(imagenBytes, "publicaciones", usuario.getId());
             System.out.println("Imagen subida: " + urlImagen);
 
+
             // 4️⃣ Crear lugar usando geocoding
             String nombreLugar = "Ubicación desconocida";
             try {
@@ -132,7 +133,7 @@ public class PublicacionService {
             publicacion.setIdUsuario(usuario.getId());
             publicacion.setLugar(lugar);
             publicacion.setDescripcion(request.getDescripcion());
-            publicacion.setUrlImagen(urlImagen);
+            publicacion.setUrlImagen(obtenerBucketYPathDeUrl(urlImagen));
             publicacion.setGps(gps);
 
             publicacionRepository.save(publicacion);
@@ -188,5 +189,27 @@ public class PublicacionService {
                 usuarioSummary
             );
         });
+    }
+
+    //crear un metodo que obtenga de la url de la imagen el bucket y el path de la imagen, https://198.162.1.135/worldrank-publicaciones/usuario-id/imagen.jpg
+    // y retornar solo usuario-id/imagen.jpg
+    private String obtenerBucketYPathDeUrl(String urlImagen) {
+        try {
+            java.net.URL url = new java.net.URL(urlImagen);
+            String path = url.getPath(); // /worldrank-publicaciones/usuario-id/imagen.jpg
+            if (path.startsWith("/")) {
+                path = path.substring(1); // worldrank-publicaciones/usuario-id/imagen.jpg
+            }
+            int firstSlashIndex = path.indexOf('/');
+            if (firstSlashIndex != -1) {
+                return path.substring(firstSlashIndex + 1); // usuario-id/imagen.jpg
+            } else {
+                return path; // en caso de que no haya más slashes
+            }
+        } catch (Exception e) {
+            System.err.println("Error al parsear la URL de la imagen: " + e.getMessage());
+            return urlImagen; // retornar la URL completa en caso de error
+        }
+   
     }
 }
