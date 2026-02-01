@@ -55,7 +55,32 @@ public class MapboxGeocodingService implements GeocodingService {
                 double lon = center.get(0).asDouble();
                 double lat = center.get(1).asDouble();
                 String category = feature.path("properties").path("category").asText();
-                places.add(new PlaceInfo(name, address, lat, lon, category));
+                
+                // Extraer country y city del context
+                String country = null;
+                String city = null;
+                String countryCode = null;
+                
+                JsonNode context = feature.path("context");
+                for (JsonNode ctx : context) {
+                    String id = ctx.path("id").asText();
+                    String text = ctx.path("text").asText();
+                    
+                    if (id.startsWith("country.")) {
+                        country = text;
+                        // El short_code viene en formato "es" o "es-M"
+                        String shortCode = ctx.path("short_code").asText();
+                        if (shortCode != null && !shortCode.isEmpty()) {
+                            // Separar si tiene sufijo de región (ej: "es-M" para España con región)
+                            countryCode = shortCode.split("-")[0];
+                        }
+                    }
+                    if (id.startsWith("place.") || id.startsWith("locality.")) {
+                        city = text;
+                    }
+                }
+                
+                places.add(new PlaceInfo(name, address, lat, lon, category, country, city, countryCode));
             }
         } catch (Exception e) {
             // Log error

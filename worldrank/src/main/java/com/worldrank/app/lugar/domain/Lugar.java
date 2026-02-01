@@ -80,6 +80,18 @@ public class Lugar {
     @Column(name = "confianza")
     private Integer confianza;
 
+    /**
+     * País del lugar (extraído del geocoding)
+     */
+    @Column(name = "pais")
+    private String pais;
+
+    /**
+     * Ciudad del lugar (extraído del geocoding)
+     */
+    @Column(name = "ciudad")
+    private String ciudad;
+
 
 
     // ========================

@@ -4,10 +4,12 @@ import com.worldrank.app.lugar.domain.Lugar;
 import com.worldrank.app.lugar.service.LugarService;
 import com.worldrank.app.lugar.service.StorageService;
 import com.worldrank.app.geocoding.GeocodingService;
+import com.worldrank.app.geocoding.PlaceInfo;
 import com.worldrank.app.publicacion.controller.CrearPublicacionRequest;
 import com.worldrank.app.publicacion.controller.PublicacionResponse;
 import com.worldrank.app.publicacion.dto.PublicacionListResponse;
 import com.worldrank.app.publicacion.dto.UsuarioSummary;
+import com.worldrank.app.region.service.RegionService;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.Coordinate;
@@ -18,14 +20,12 @@ import com.worldrank.app.user.domain.Profile;
 import com.worldrank.app.user.domain.Usuario;
 import com.worldrank.app.user.repository.ProfileRepository;
 import com.worldrank.app.user.repository.UsuarioRepository;
-import com.worldrank.app.visita.domain.VisitaResultado;
 import com.worldrank.app.visita.service.VisitaService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -39,6 +39,7 @@ public class PublicacionService {
     private StorageService storageService;
     private ImageMetadataService imageMetadataService;
     private GeocodingService geocodingService;
+    private RegionService regionService;
     private ProfileRepository profileRepository;
     private UsuarioRepository usuarioRepository;
     private GeometryFactory geometryFactory;
@@ -50,6 +51,7 @@ public class PublicacionService {
             StorageService storageService,
             ImageMetadataService imageMetadataService,
             GeocodingService geocodingService,
+            RegionService regionService,
             ProfileRepository profileRepository,
             UsuarioRepository usuarioRepository) {
 
@@ -59,6 +61,7 @@ public class PublicacionService {
         this.storageService = storageService;
         this.imageMetadataService = imageMetadataService;
         this.geocodingService = geocodingService;
+        this.regionService = regionService;
         this.profileRepository = profileRepository;
         this.usuarioRepository = usuarioRepository;
         this.geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -103,29 +106,35 @@ public class PublicacionService {
             System.out.println("Imagen subida: " + urlImagen);
 
 
-            // 4️⃣ Crear lugar usando geocoding
-            String nombreLugar = "Ubicación desconocida";
-            try {
-                var place = geocodingService.reverseGeocode(latitud, longitud);
-                if (place != null) {
-                    nombreLugar = place.name();
+            // 4️⃣ Obtener información del lugar mediante geocoding
+            PlaceInfo placeInfo = null;
+            if (latitud != null && longitud != null) {
+                try {
+                    placeInfo = geocodingService.reverseGeocode(latitud, longitud);
+                    if (placeInfo != null) {
+                        System.out.println("Geocoding: " + placeInfo.name() + " (" + placeInfo.category() + ")");
+                        if (placeInfo.country() != null) {
+                            System.out.println("País: " + placeInfo.country() + " (" + placeInfo.countryCode() + ")");
+                        }
+                        if (placeInfo.city() != null) {
+                            System.out.println("Ciudad: " + placeInfo.city());
+                        }
+                    }
+                } catch (Exception e) {
+                    System.out.println("Error en geocoding: " + e.getMessage());
                 }
-            } catch (Exception e) {
-                System.out.println("Error en geocoding: " + e.getMessage());
             }
 
             // 5️⃣ Crear punto GPS (lng, lat)
             Point gps = geometryFactory.createPoint(
-                    new Coordinate(longitud.doubleValue(), latitud.doubleValue())
+                    new Coordinate(longitud != null ? longitud.doubleValue() : 0, 
+                                   latitud != null ? latitud.doubleValue() : 0)
             );
-
-            Lugar lugar = lugarService.obtenerLugarCercano(gps);
-            System.out.println("Lugar creado: " + lugar.getId());
-
             gps.setSRID(4326);
-            System.out.println("GPS creado: " + gps);
 
-          
+            // 6️⃣ Obtener o crear lugar con información del geocoding
+            Lugar lugar = lugarService.obtenerLugarCercano(gps, placeInfo);
+            System.out.println("Lugar: " + lugar.getId() + " - " + lugar.getNombre());
 
             // 7️⃣ Crear publicación
             Publicacion publicacion = new Publicacion();
@@ -140,11 +149,18 @@ public class PublicacionService {
             System.out.println("Publicacion guardada: " + publicacion.getId());
 
 
-              // 6️⃣ registra visita y obtiene Puntaje
-            int resultado =
-                    visitaService.registrarVisita(usuario, lugar);
+            // 8️⃣ Registra visita y obtiene Puntaje
+            int resultado = visitaService.registrarVisita(usuario, lugar);
             System.out.println("Visita registrada, puntaje: " + resultado);
 
+            // 9️⃣ Procesar regiones (país/ciudad) y sumar puntos adicionales
+            if (placeInfo != null) {
+                var resultadoRegion = regionService.procesarRegiones(usuario, placeInfo);
+                if (resultadoRegion.tieneRegionesNuevas()) {
+                    resultado += resultadoRegion.getTotalPuntos();
+                    System.out.println("Regiones descubiertas: " + resultadoRegion.getRegionesDescubiertas() + ", puntos adicionales: " + resultadoRegion.getTotalPuntos());
+                }
+            }
 
             return new PublicacionResponse(
                     publicacion.getId(),
@@ -210,6 +226,6 @@ public class PublicacionService {
             System.err.println("Error al parsear la URL de la imagen: " + e.getMessage());
             return urlImagen; // retornar la URL completa en caso de error
         }
-   
+    
     }
 }
