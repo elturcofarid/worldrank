@@ -60,6 +60,7 @@ public class RegionService {
             .nombre(nombre)
             .codigoIso(codigoIso)
             .tipo("PAIS")
+            .fechaCreacion(LocalDateTime.now())
             .build();
         return regionRepository.save(pais);
     }
@@ -85,6 +86,7 @@ public class RegionService {
             .id(UUID.randomUUID())
             .nombre(ciudadNombre)
             .tipo("CIUDAD")
+            .fechaCreacion(LocalDateTime.now())
             .build();
         return regionRepository.save(ciudad);
     }
@@ -98,6 +100,7 @@ public class RegionService {
             .nombre(nombre)
             .pais(pais)
             .tipo("CIUDAD")
+            .fechaCreacion(LocalDateTime.now())
             .build();
         return regionRepository.save(ciudad);
     }

@@ -33,11 +33,6 @@ public interface UsuarioRegionRepository extends JpaRepository<UsuarioRegion, UU
     Optional<UsuarioRegion> findByUsuarioAndRegionNombreAndRegionTipo(Usuario usuario, String nombreRegion, String tipoRegion);
 
     /**
-     * Buscar si un usuario ya visitó una ciudad específica (por nombre)
-     */
-    boolean existsByUsuarioAndRegionCiudadAndRegionTipo(Usuario usuario, String nombreCiudad, String tipoRegion);
-
-    /**
      * Contar países únicos visitados por un usuario
      */
     long countByUsuarioAndRegionTipo(Usuario usuario, String tipoRegion);
